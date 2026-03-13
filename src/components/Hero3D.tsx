@@ -4,16 +4,26 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Sphere, MeshDistortMaterial, Float, PerspectiveCamera } from '@react-three/drei';
 import { useRef } from 'react';
 import * as THREE from 'three';
+import { MathUtils } from 'three'
 
 function Scene() {
   const meshRef = useRef<THREE.Mesh>(null!);
 
   // 这里的交互逻辑：模型会根据时间自转，并产生轻微扭动
   useFrame((state) => {
-    const time = state.clock.getElapsedTime();
-    meshRef.current.rotation.x = time * 0.2;
-    meshRef.current.rotation.y = time * 0.3;
-  });
+  if (meshRef.current) {
+    // 基础自转
+    meshRef.current.rotation.y += 0.005;
+    
+    // 鼠标追踪：让球体向鼠标方向微微倾斜
+    // state.mouse.x/y 的范围是 -1 到 1
+    const targetRotationX = state.mouse.y * 0.5;
+    const targetRotationY = state.mouse.x * 0.5;
+    
+    meshRef.current.rotation.x = MathUtils.lerp(meshRef.current.rotation.x, targetRotationX, 0.1);
+    meshRef.current.rotation.y = MathUtils.lerp(meshRef.current.rotation.y, targetRotationY, 0.1);
+  }
+});
 
   return (
     <>
